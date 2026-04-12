@@ -1,0 +1,37 @@
+name: Weekly profile update
+
+on:
+  schedule:
+    - cron: "30 17 * * 0"   # 5:30 PM UTC Sunday = 11:00 PM IST Sunday
+  workflow_dispatch:
+
+jobs:
+  rewrite-profile:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write          # Needed to commit the updated profile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Rewrite interest profile
+        run: python -m feedback.rewrite_profile
+
+      - name: Commit updated profile
+        run: |
+          git config user.name "digest-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data/interest-profile.md
+          git diff --staged --quiet || git commit -m "chore: weekly profile update $(date +%Y-%m-%d)"
+          git push
+
+    env:
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}

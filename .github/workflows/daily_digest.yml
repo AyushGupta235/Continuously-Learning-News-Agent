@@ -1,0 +1,51 @@
+name: Daily news digest
+
+on:
+  schedule:
+    - cron: "30 3 * * *"    # 3:30 AM UTC = 9:00 AM IST
+  workflow_dispatch:          # Manual trigger for testing
+
+jobs:
+  run-digest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Ingest articles
+        run: python -m pipeline.ingest
+
+      - name: Deduplicate
+        run: python -m pipeline.dedup
+
+      - name: Filter (Groq scoring)
+        run: python -m pipeline.filter
+
+      - name: Summarise (Groq)
+        run: python -m pipeline.summarise
+
+      - name: Cluster stories
+        run: python -m pipeline.cluster
+
+      - name: Compose & render
+        run: python -m pipeline.compose
+
+      - name: Deliver email
+        run: python -m pipeline.deliver
+
+      - name: Aggregate feedback signals
+        run: python -m feedback.aggregate
+
+    env:
+      GROQ_API_KEY:      ${{ secrets.GROQ_API_KEY }}
+      RESEND_API_KEY:    ${{ secrets.RESEND_API_KEY }}
+      NEWSAPI_KEY:       ${{ secrets.NEWSAPI_KEY }}
+      DIGEST_EMAIL:      ${{ secrets.DIGEST_EMAIL }}
+      TRACKER_BASE_URL:  ${{ secrets.TRACKER_BASE_URL }}
