@@ -25,3 +25,9 @@ users:
     active: true
     # filter_threshold: 6
     # max_stories: 12
+
+  - id: pratik
+    name: Pratik
+    email: pratikmsr@outlook.com
+    profile: users/profiles/f430c284.md
+    active: true
