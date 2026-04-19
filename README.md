@@ -4,7 +4,7 @@ A self-improving daily news briefing that emails you at 9 AM IST.
 
 - **Sources**: RSS feeds, NewsAPI, Reddit, Hacker News
 - **AI**: xAI Grok API (`grok-4-1-fast-non-reasoning`) for scoring, summarising, and composing
-- **Email**: Resend API
+- **Email**: Gmail SMTP
 - **Feedback loop**: click "Useful" / "Skip" on stories → weekly xAI profile rewrite
 - **Scheduling**: GitHub Actions (free)
 
@@ -14,15 +14,15 @@ A self-improving daily news briefing that emails you at 9 AM IST.
 pip install -r requirements.txt
 
 export XAI_API_KEY=...
-export RESEND_API_KEY=...
+export GMAIL_APP_PASSWORD=...          # From https://myaccount.google.com/apppasswords
 export NEWSAPI_KEY=...
-export DIGEST_EMAIL=you@example.com
+export DIGEST_EMAIL=your-email@gmail.com
 export TRACKER_BASE_URL=https://your-railway-app.up.railway.app
 
 # Dry run — skips email, writes data/digest_preview.html
 python run_pipeline.py --dry-run
 
-# Full send
+# Full send (requires GMAIL_APP_PASSWORD)
 python run_pipeline.py
 ```
 
@@ -42,9 +42,9 @@ tests/          Unit tests (pytest)
 | Secret | Where to get it |
 |---|---|
 | `XAI_API_KEY` | console.x.ai |
-| `RESEND_API_KEY` | resend.com |
+| `GMAIL_APP_PASSWORD` | https://myaccount.google.com/apppasswords |
 | `NEWSAPI_KEY` | newsapi.org |
-| `DIGEST_EMAIL` | Your email |
+| `DIGEST_EMAIL` | Your Gmail address |
 | `TRACKER_BASE_URL` | Railway deployment URL |
 
 ## Feedback server (Railway)

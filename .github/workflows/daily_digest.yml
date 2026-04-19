@@ -44,8 +44,8 @@ jobs:
         run: python -m feedback.aggregate
 
     env:
-      XAI_API_KEY:       ${{ secrets.XAI_API_KEY }}
-      RESEND_API_KEY:    ${{ secrets.RESEND_API_KEY }}
-      NEWSAPI_KEY:       ${{ secrets.NEWSAPI_KEY }}
-      DIGEST_EMAIL:      ${{ secrets.DIGEST_EMAIL }}
-      TRACKER_BASE_URL:  ${{ secrets.TRACKER_BASE_URL }}
+      XAI_API_KEY:           ${{ secrets.XAI_API_KEY }}
+      GMAIL_APP_PASSWORD:    ${{ secrets.GMAIL_APP_PASSWORD }}
+      NEWSAPI_KEY:           ${{ secrets.NEWSAPI_KEY }}
+      DIGEST_EMAIL:          ${{ secrets.DIGEST_EMAIL }}
+      TRACKER_BASE_URL:      ${{ secrets.TRACKER_BASE_URL }}

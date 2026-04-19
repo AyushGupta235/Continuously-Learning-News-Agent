@@ -13,7 +13,7 @@ XAI_COMPOSE_TEMP = 0.4
 XAI_PROFILE_TEMP = 0.2
 
 # ── External APIs ─────────────────────────────────────────────────────────────
-RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
+GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "")
 NEWSAPI_KEY = os.environ.get("NEWSAPI_KEY", "")
 DIGEST_EMAIL = os.environ.get("DIGEST_EMAIL", "")
 TRACKER_BASE_URL = os.environ.get("TRACKER_BASE_URL", "http://localhost:5000")
