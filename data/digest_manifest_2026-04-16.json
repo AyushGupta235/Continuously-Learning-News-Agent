@@ -1,0 +1,74 @@
+{
+  "ceacd7fdbfce3812": {
+    "url": "https://www.foreignaffairs.com/united-states/cyberwars-new-frontier",
+    "source": "Foreign Affairs",
+    "category": "geopolitics",
+    "title": "Cyberwar’s New Frontier"
+  },
+  "5270a493e798e087": {
+    "url": "https://www.foreignaffairs.com/united-states/tech-high-ground-jake-sullivan",
+    "source": "Foreign Affairs",
+    "category": "geopolitics",
+    "title": "The Tech High Ground"
+  },
+  "97c58313b4e9831e": {
+    "url": "https://www.technologyreview.com/2026/04/15/1135898/cyberscammers-bypassing-bank-telegram/",
+    "source": "MIT Technology Review",
+    "category": "tech",
+    "title": "Cyberscammers are bypassing banks’ security with illicit tools sold on Telegram"
+  },
+  "f055c92c257ecae7": {
+    "url": "https://www.technologyreview.com/2026/04/15/1135530/building-trust-in-the-ai-era-with-privacy-led-ux/",
+    "source": "MIT Technology Review",
+    "category": "tech",
+    "title": "Building trust in the AI era with privacy-led UX"
+  },
+  "8a062471471d4f04": {
+    "url": "https://www.theverge.com/policy/912680/ftc-ad-agency-settlement-trust-safety",
+    "source": "The Verge",
+    "category": "tech",
+    "title": "FTC pushes ad agencies into dropping brand safety rules"
+  },
+  "0f6fe98a47735aa2": {
+    "url": "https://importai.substack.com/p/import-ai-452-scaling-laws-for-cyberwar",
+    "source": "Import AI (Jack Clark)",
+    "category": "tech",
+    "title": "Import AI 452: Scaling laws for cyberwar; rising tides of AI automation; and a puzzle over gDP forecasting"
+  },
+  "c165d5334ed04aab": {
+    "url": "https://importai.substack.com/p/importai-449-llms-training-other",
+    "source": "Import AI (Jack Clark)",
+    "category": "tech",
+    "title": "ImportAI 449: LLMs training other LLMs; 72B distributed training run; computer vision is harder than generative text"
+  },
+  "d8b2c806a7b97d69": {
+    "url": "https://importai.substack.com/p/import-ai-447-the-agi-economy-testing",
+    "source": "Import AI (Jack Clark)",
+    "category": "tech",
+    "title": "Import AI 447: The AGI economy; testing AIs with generated games; and agent ecologies"
+  },
+  "454aed058ebc12a2": {
+    "url": "https://importai.substack.com/p/import-ai-445-timing-superintelligence",
+    "source": "Import AI (Jack Clark)",
+    "category": "tech",
+    "title": "Import AI 445: Timing superintelligence; AIs solve frontier math proofs; a new ML research benchmark"
+  },
+  "7ab25284e7d3bccb": {
+    "url": "https://importai.substack.com/p/import-ai-442-winners-and-losers",
+    "source": "Import AI (Jack Clark)",
+    "category": "tech",
+    "title": "Import AI 442: Winners and losers in the AI economy; math proof automation; and industrialization of cyber espionage"
+  },
+  "8ea0daff395dab0c": {
+    "url": "https://www.ft.com/content/f3c8decc-0c59-49fa-9854-ddd9103279f4",
+    "source": "Financial Times",
+    "category": "business",
+    "title": "How the Strait of Hormuz will change Iran’s regime"
+  },
+  "34875ee06741e6a4": {
+    "url": "https://www.ft.com/content/d47abaa2-8cfc-48eb-a996-909580b8c816",
+    "source": "Financial Times",
+    "category": "business",
+    "title": "Russia hits Ukraine with largest air attack this year"
+  }
+}

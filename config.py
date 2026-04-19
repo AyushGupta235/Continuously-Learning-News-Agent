@@ -4,13 +4,13 @@ Source registry and global constants for the news digest pipeline.
 
 import os
 
-# ── Groq ─────────────────────────────────────────────────────────────────────
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
-GROQ_MODEL = "llama-3.3-70b-versatile"
-GROQ_FILTER_TEMP = 0.1
-GROQ_SUMMARISE_TEMP = 0.3
-GROQ_COMPOSE_TEMP = 0.4
-GROQ_PROFILE_TEMP = 0.2
+# ── xAI Grok ─────────────────────────────────────────────────────────────────
+XAI_API_KEY = os.environ.get("XAI_API_KEY", "")
+XAI_MODEL = "grok-4-1-fast-non-reasoning"
+XAI_FILTER_TEMP = 0.1
+XAI_SUMMARISE_TEMP = 0.5
+XAI_COMPOSE_TEMP = 0.4
+XAI_PROFILE_TEMP = 0.2
 
 # ── External APIs ─────────────────────────────────────────────────────────────
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
@@ -22,8 +22,8 @@ TRACKER_BASE_URL = os.environ.get("TRACKER_BASE_URL", "http://localhost:5000")
 MAX_RAW_ARTICLES = 250       # Cap before dedup
 FILTER_SCORE_THRESHOLD = 6   # Articles scoring below this are dropped
 MAX_SCORED_ARTICLES = 30     # Articles passed to summarise step
-FILTER_BATCH_SIZE = 20       # Articles per Groq scoring call
-SUMMARISE_CONCURRENCY = 5    # Max simultaneous Groq summarise calls
+FILTER_BATCH_SIZE = 20       # Articles per xAI scoring call
+SUMMARISE_CONCURRENCY = 5    # Max simultaneous xAI summarise calls
 MAX_DIGEST_STORIES = 12      # Stories in final email
 MIN_DIGEST_STORIES = 8
 

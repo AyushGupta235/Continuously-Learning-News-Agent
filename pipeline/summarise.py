@@ -1,5 +1,5 @@
 """
-Groq deep summarisation for each scored article.
+xAI Grok deep summarisation for each scored article.
 
 Runs up to SUMMARISE_CONCURRENCY calls concurrently.
 Attaches 'summary' field to each article.
@@ -8,12 +8,12 @@ Attaches 'summary' field to each article.
 import asyncio
 import logging
 
-from groq import AsyncGroq
+from openai import AsyncOpenAI
 
 from config import (
-    GROQ_API_KEY,
-    GROQ_MODEL,
-    GROQ_SUMMARISE_TEMP,
+    XAI_API_KEY,
+    XAI_MODEL,
+    XAI_SUMMARISE_TEMP,
     SUMMARISE_CONCURRENCY,
 )
 
@@ -21,12 +21,19 @@ log = logging.getLogger(__name__)
 
 _SYSTEM_PROMPT = (
     "You are a senior analyst writing for a busy professional in Bengaluru, India.\n"
-    "Your summaries must:\n"
-    "- Lead with the single most important fact or development\n"
-    "- Explain WHY it matters (consequences, implications, context)\n"
-    "- Note what is still uncertain or contested\n"
-    "- Be 4-5 sentences maximum. No filler. No 'In conclusion.'\n"
-    "- Never repeat the headline verbatim as the first sentence"
+    "Your summaries must prioritize INSIGHT over recitation:\n\n"
+    "Structure:\n"
+    "1. Lead with the most significant insight or implication (not just what happened)\n"
+    "2. Ground it with specific data, evidence, or details that reveal why it matters\n"
+    "3. Explain the downstream consequences or second-order effects\n"
+    "4. Note what remains uncertain or contested\n\n"
+    "Style:\n"
+    "- 5-7 sentences (substance over brevity)\n"
+    "- Include specific numbers, quotes, or examples that illuminate the insight\n"
+    "- Avoid 'this matters because' throat-clearing; show WHY through evidence\n"
+    "- Never repeat the headline verbatim\n"
+    "- If the story has a contrarian or unintuitive angle, highlight it\n"
+    "- No filler, no vagueness. Assume the reader will only read this once."
 )
 
 _MAX_FULL_TEXT = 12_000  # chars — leaves headroom in 128k context
@@ -44,13 +51,13 @@ def _build_user_prompt(article: dict) -> str:
 
 
 async def _summarise_one(
-    article: dict, client: AsyncGroq, sem: asyncio.Semaphore
+    article: dict, client: AsyncOpenAI, sem: asyncio.Semaphore
 ) -> dict:
     async with sem:
         try:
             response = await client.chat.completions.create(
-                model=GROQ_MODEL,
-                temperature=GROQ_SUMMARISE_TEMP,
+                model=XAI_MODEL,
+                temperature=XAI_SUMMARISE_TEMP,
                 messages=[
                     {"role": "system", "content": _SYSTEM_PROMPT},
                     {"role": "user", "content": _build_user_prompt(article)},
@@ -67,7 +74,7 @@ async def _summarise_one(
 
 async def summarise_articles(articles: list[dict]) -> list[dict]:
     sem = asyncio.Semaphore(SUMMARISE_CONCURRENCY)
-    async with AsyncGroq(api_key=GROQ_API_KEY) as client:
+    async with AsyncOpenAI(api_key=XAI_API_KEY, base_url="https://api.x.ai/v1") as client:
         tasks = [_summarise_one(a, client, sem) for a in articles]
         results = await asyncio.gather(*tasks)
     log.info("Summarised %d articles", len(results))

@@ -3,9 +3,9 @@
 A self-improving daily news briefing that emails you at 9 AM IST.
 
 - **Sources**: RSS feeds, NewsAPI, Reddit, Hacker News
-- **AI**: Groq API (`llama-3.3-70b-versatile`) for scoring, summarising, and composing
+- **AI**: xAI Grok API (`grok-4-1-fast-non-reasoning`) for scoring, summarising, and composing
 - **Email**: Resend API
-- **Feedback loop**: click "Useful" / "Skip" on stories → weekly Groq profile rewrite
+- **Feedback loop**: click "Useful" / "Skip" on stories → weekly xAI profile rewrite
 - **Scheduling**: GitHub Actions (free)
 
 ## Quick start
@@ -13,7 +13,7 @@ A self-improving daily news briefing that emails you at 9 AM IST.
 ```bash
 pip install -r requirements.txt
 
-export GROQ_API_KEY=...
+export XAI_API_KEY=...
 export RESEND_API_KEY=...
 export NEWSAPI_KEY=...
 export DIGEST_EMAIL=you@example.com
@@ -41,7 +41,7 @@ tests/          Unit tests (pytest)
 
 | Secret | Where to get it |
 |---|---|
-| `GROQ_API_KEY` | console.groq.com |
+| `XAI_API_KEY` | console.x.ai |
 | `RESEND_API_KEY` | resend.com |
 | `NEWSAPI_KEY` | newsapi.org |
 | `DIGEST_EMAIL` | Your email |
@@ -55,7 +55,7 @@ Set `FEEDBACK_LOG_PATH` and `MANIFEST_DIR` env vars pointing to a persistent vol
 
 ## Customising your profile
 
-Edit `data/interest-profile.md` directly, or let the weekly Groq rewrite
+Edit `data/interest-profile.md` directly, or let the weekly xAI rewrite
 (`feedback/rewrite_profile.py`) evolve it from your click signals.
 
 ## Running tests

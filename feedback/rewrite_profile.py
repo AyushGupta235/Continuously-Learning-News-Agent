@@ -1,7 +1,7 @@
 """
 Weekly interest profile rewrite — run every Sunday via GitHub Actions.
 
-Reads the current profile + weekly_summary.json, asks Groq to produce
+Reads the current profile + weekly_summary.json, asks xAI Grok to produce
 an incrementally-updated profile, writes it back to data/interest-profile.md.
 """
 
@@ -9,12 +9,12 @@ import json
 import logging
 from pathlib import Path
 
-from groq import Groq
+from openai import OpenAI
 
 from config import (
-    GROQ_API_KEY,
-    GROQ_MODEL,
-    GROQ_PROFILE_TEMP,
+    XAI_API_KEY,
+    XAI_MODEL,
+    XAI_PROFILE_TEMP,
     INTEREST_PROFILE_PATH,
     WEEKLY_SUMMARY_PATH,
 )
@@ -82,10 +82,10 @@ def rewrite_profile() -> str:
         "- Return ONLY the updated Markdown. No explanation."
     )
 
-    client = Groq(api_key=GROQ_API_KEY)
+    client = OpenAI(api_key=XAI_API_KEY, base_url="https://api.x.ai/v1")
     response = client.chat.completions.create(
-        model=GROQ_MODEL,
-        temperature=GROQ_PROFILE_TEMP,
+        model=XAI_MODEL,
+        temperature=XAI_PROFILE_TEMP,
         messages=[
             {"role": "system", "content": _SYSTEM_PROMPT},
             {"role": "user", "content": user_prompt},
@@ -94,7 +94,7 @@ def rewrite_profile() -> str:
     updated_profile = (response.choices[0].message.content or "").strip()
 
     if len(updated_profile) < 100:
-        log.error("Groq returned suspiciously short profile — aborting rewrite")
+        log.error("xAI returned suspiciously short profile — aborting rewrite")
         return current_profile
 
     profile_path.write_text(updated_profile + "\n")

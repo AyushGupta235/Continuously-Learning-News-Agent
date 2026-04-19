@@ -27,7 +27,7 @@ def send(html: str) -> str:
     subject = f"Your digest — {date.today().strftime('%A, %d %b')}"
 
     params: resend.Emails.SendParams = {
-        "from": "Your Digest <digest@yourdomain.com>",
+        "from": f"Your Digest <{DIGEST_EMAIL}>",
         "to": [DIGEST_EMAIL],
         "subject": subject,
         "html": html,

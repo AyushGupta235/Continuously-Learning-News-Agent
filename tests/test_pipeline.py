@@ -1,5 +1,5 @@
 """
-Unit tests for pipeline/ingest, dedup, and filter (with mocked Groq).
+Unit tests for pipeline/ingest, dedup, and filter (with mocked xAI).
 Run with: pytest tests/test_pipeline.py -v
 """
 
@@ -108,11 +108,11 @@ class TestIngestShapes:
         assert _article_id("https://a.com") != _article_id("https://b.com")
 
 
-# ── Filter tests (mocked Groq) ────────────────────────────────────────────────
+# ── Filter tests (mocked xAI) ────────────────────────────────────────────────
 
 class TestFilter:
-    def _make_groq_response(self, scores: list[dict]) -> MagicMock:
-        """Build a mock Groq response containing a JSON score array."""
+    def _make_xai_response(self, scores: list[dict]) -> MagicMock:
+        """Build a mock xAI response containing a JSON score array."""
         msg = MagicMock()
         msg.content = json.dumps(scores)
         choice = MagicMock()
@@ -121,8 +121,8 @@ class TestFilter:
         resp.choices = [choice]
         return resp
 
-    @patch("pipeline.filter.Groq")
-    def test_score_threshold_filter(self, mock_groq_cls):
+    @patch("pipeline.filter.OpenAI")
+    def test_score_threshold_filter(self, mock_openai_cls):
         from pipeline.filter import score_articles
 
         articles = [
@@ -136,8 +136,8 @@ class TestFilter:
             {"id": ids[1], "score": 4, "reason": "not relevant"},
             {"id": ids[2], "score": 7, "reason": "relevant"},
         ]
-        mock_groq_cls.return_value.chat.completions.create.return_value = (
-            self._make_groq_response(scores)
+        mock_openai_cls.return_value.chat.completions.create.return_value = (
+            self._make_xai_response(scores)
         )
 
         result = score_articles(articles)
@@ -145,8 +145,8 @@ class TestFilter:
         assert len(result) == 2
         assert all(a["relevance_score"] >= 6 for a in result)
 
-    @patch("pipeline.filter.Groq")
-    def test_results_sorted_by_score(self, mock_groq_cls):
+    @patch("pipeline.filter.OpenAI")
+    def test_results_sorted_by_score(self, mock_openai_cls):
         from pipeline.filter import score_articles
 
         articles = [
@@ -159,30 +159,30 @@ class TestFilter:
             {"id": ids[0], "score": 7, "reason": "good"},
             {"id": ids[1], "score": 9, "reason": "excellent"},
         ]
-        mock_groq_cls.return_value.chat.completions.create.return_value = (
-            self._make_groq_response(scores)
+        mock_openai_cls.return_value.chat.completions.create.return_value = (
+            self._make_xai_response(scores)
         )
 
         result = score_articles(articles)
         assert result[0]["relevance_score"] == 9
 
-    @patch("pipeline.filter.Groq")
-    def test_groq_failure_graceful(self, mock_groq_cls):
+    @patch("pipeline.filter.OpenAI")
+    def test_xai_failure_graceful(self, mock_openai_cls):
         from pipeline.filter import score_articles
 
-        mock_groq_cls.return_value.chat.completions.create.side_effect = Exception("timeout")
+        mock_openai_cls.return_value.chat.completions.create.side_effect = Exception("timeout")
         articles = [_make_article()]
         result = score_articles(articles)
         assert result == []
 
-    @patch("pipeline.filter.Groq")
-    def test_attaches_score_fields(self, mock_groq_cls):
+    @patch("pipeline.filter.OpenAI")
+    def test_attaches_score_fields(self, mock_openai_cls):
         from pipeline.filter import score_articles
 
         article = _make_article()
         scores = [{"id": article["id"], "score": 8, "reason": "great"}]
-        mock_groq_cls.return_value.chat.completions.create.return_value = (
-            self._make_groq_response(scores)
+        mock_openai_cls.return_value.chat.completions.create.return_value = (
+            self._make_xai_response(scores)
         )
 
         result = score_articles([article])

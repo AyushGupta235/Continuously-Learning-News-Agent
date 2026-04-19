@@ -1,7 +1,7 @@
 """
 Final digest assembly.
 
-1. Single Groq call: writes a 2-sentence intro and returns optimal story order.
+1. Single xAI call: writes a 2-sentence intro and returns optimal story order.
 2. Renders the HTML email via Jinja2 template.
 3. Writes a digest_manifest_{date}.json for the feedback tracker.
 """
@@ -12,14 +12,14 @@ import re
 from datetime import date, timezone
 from pathlib import Path
 
-from groq import Groq
+from openai import OpenAI
 from jinja2 import Environment, FileSystemLoader
 
 from config import (
     DATA_DIR,
-    GROQ_API_KEY,
-    GROQ_COMPOSE_TEMP,
-    GROQ_MODEL,
+    XAI_API_KEY,
+    XAI_COMPOSE_TEMP,
+    XAI_MODEL,
     MAX_DIGEST_STORIES,
     MIN_DIGEST_STORIES,
     TEMPLATE_PATH,
@@ -57,6 +57,7 @@ def _parse_compose_response(text: str) -> dict:
     start = text.find("{")
     end = text.rfind("}") + 1
     if start == -1 or end == 0:
+        log.warning("Could not find JSON in xAI response")
         return {"intro": "", "ordered_story_ids": []}
     try:
         return json.loads(text[start:end])
@@ -66,10 +67,10 @@ def _parse_compose_response(text: str) -> dict:
 
 
 def _order_stories(stories: list[dict], ordered_ids: list[str]) -> list[dict]:
-    """Re-order stories per Groq's suggestion; fall back to relevance order."""
+    """Re-order stories per xAI's suggestion; fall back to relevance order."""
     id_to_story = {s["id"]: s for s in stories}
     ordered = [id_to_story[oid] for oid in ordered_ids if oid in id_to_story]
-    # append any stories Groq omitted
+    # append any stories xAI omitted
     seen = set(ordered_ids)
     ordered += [s for s in stories if s["id"] not in seen]
     return ordered[:MAX_DIGEST_STORIES]
@@ -80,17 +81,17 @@ def compose(stories: list[dict]) -> tuple[str, dict]:
     Returns (rendered_html, manifest_dict).
     manifest_dict maps story_id → {url, source, category, title}.
     """
-    # Limit to reasonable number for Groq call
+    # Limit to reasonable number for xAI call
     stories = stories[:MAX_DIGEST_STORIES]
-    client = Groq(api_key=GROQ_API_KEY)
+    client = OpenAI(api_key=XAI_API_KEY, base_url="https://api.x.ai/v1")
     today = date.today()
     date_str = today.strftime("%Y-%m-%d")
 
-    # Groq: intro + ordering
+    # xAI: intro + ordering
     try:
         response = client.chat.completions.create(
-            model=GROQ_MODEL,
-            temperature=GROQ_COMPOSE_TEMP,
+            model=XAI_MODEL,
+            temperature=XAI_COMPOSE_TEMP,
             messages=[
                 {"role": "system", "content": _SYSTEM_PROMPT},
                 {
@@ -102,7 +103,7 @@ def compose(stories: list[dict]) -> tuple[str, dict]:
         raw = response.choices[0].message.content or ""
         compose_data = _parse_compose_response(raw)
     except Exception as exc:
-        log.error("Groq compose failed: %s", exc)
+        log.error("xAI compose failed: %s", exc)
         compose_data = {"intro": "", "ordered_story_ids": [s["id"] for s in stories]}
 
     intro = compose_data.get("intro", "")

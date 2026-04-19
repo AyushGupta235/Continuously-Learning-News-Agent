@@ -25,10 +25,10 @@ jobs:
       - name: Deduplicate
         run: python -m pipeline.dedup
 
-      - name: Filter (Groq scoring)
+      - name: Filter (xAI scoring)
         run: python -m pipeline.filter
 
-      - name: Summarise (Groq)
+      - name: Summarise (xAI)
         run: python -m pipeline.summarise
 
       - name: Cluster stories
@@ -44,7 +44,7 @@ jobs:
         run: python -m feedback.aggregate
 
     env:
-      GROQ_API_KEY:      ${{ secrets.GROQ_API_KEY }}
+      XAI_API_KEY:       ${{ secrets.XAI_API_KEY }}
       RESEND_API_KEY:    ${{ secrets.RESEND_API_KEY }}
       NEWSAPI_KEY:       ${{ secrets.NEWSAPI_KEY }}
       DIGEST_EMAIL:      ${{ secrets.DIGEST_EMAIL }}

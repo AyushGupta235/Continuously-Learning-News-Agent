@@ -1,5 +1,5 @@
 """
-Groq-based relevance scoring.
+xAI Grok-based relevance scoring.
 
 Batches articles (FILTER_BATCH_SIZE per call) against the interest profile.
 Keeps articles scoring >= FILTER_SCORE_THRESHOLD, sorted descending by score.
@@ -11,22 +11,22 @@ import logging
 import re
 from pathlib import Path
 
-from groq import Groq
+from openai import OpenAI
 
 from config import (
     FILTER_BATCH_SIZE,
     FILTER_SCORE_THRESHOLD,
-    GROQ_API_KEY,
-    GROQ_FILTER_TEMP,
-    GROQ_MODEL,
+    XAI_API_KEY,
+    XAI_FILTER_TEMP,
+    XAI_MODEL,
     INTEREST_PROFILE_PATH,
     MAX_SCORED_ARTICLES,
 )
 
 log = logging.getLogger(__name__)
 
-def _get_client() -> Groq:
-    return Groq(api_key=GROQ_API_KEY)
+def _get_client() -> OpenAI:
+    return OpenAI(api_key=XAI_API_KEY, base_url="https://api.x.ai/v1")
 
 
 def _load_profile() -> str:
@@ -63,7 +63,7 @@ def _parse_scores(text: str) -> list[dict]:
     start = text.find("[")
     end = text.rfind("]")
     if start == -1 or end == -1:
-        log.warning("Could not find JSON array in Groq response")
+        log.warning("Could not find JSON array in xAI response")
         return []
     try:
         return json.loads(text[start : end + 1])
@@ -91,8 +91,8 @@ def score_articles(articles: list[dict]) -> list[dict]:
     for i, batch in enumerate(batches):
         try:
             response = client.chat.completions.create(
-                model=GROQ_MODEL,
-                temperature=GROQ_FILTER_TEMP,
+                model=XAI_MODEL,
+                temperature=XAI_FILTER_TEMP,
                 messages=[
                     {"role": "system", "content": profile},
                     {"role": "user", "content": _build_user_prompt(batch)},
@@ -107,7 +107,7 @@ def score_articles(articles: list[dict]) -> list[dict]:
                 }
             log.info("Batch %d/%d scored: %d results", i + 1, len(batches), len(scores))
         except Exception as exc:
-            log.error("Groq scoring failed for batch %d: %s", i + 1, exc)
+            log.error("xAI scoring failed for batch %d: %s", i + 1, exc)
 
     # Attach scores, filter, sort
     scored = []
