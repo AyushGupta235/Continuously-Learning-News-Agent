@@ -17,6 +17,7 @@ from config import (
     XAI_PROFILE_TEMP,
     INTEREST_PROFILE_PATH,
     WEEKLY_SUMMARY_PATH,
+    FEEDBACK_DIR,
 )
 
 log = logging.getLogger(__name__)
@@ -49,9 +50,20 @@ def _format_summary(summary: dict) -> str:
     return "\n".join(lines)
 
 
-def rewrite_profile() -> str:
-    profile_path = Path(INTEREST_PROFILE_PATH)
-    summary_path = Path(WEEKLY_SUMMARY_PATH)
+def rewrite_profile(user_id: str | None = None) -> str:
+    """
+    Rewrite the interest profile for the given user based on 7-day feedback signals.
+
+    user_id: slug from users/registry.yaml. When provided, reads/writes
+             users/profiles/{user_id}.md and data/feedback/{user_id}/weekly_summary.json.
+             Falls back to legacy single-user paths when None.
+    """
+    if user_id:
+        profile_path = Path("users/profiles") / f"{user_id}.md"
+        summary_path = Path(FEEDBACK_DIR) / user_id / "weekly_summary.json"
+    else:
+        profile_path = Path(INTEREST_PROFILE_PATH)
+        summary_path = Path(WEEKLY_SUMMARY_PATH)
 
     if not profile_path.exists():
         raise FileNotFoundError(f"Profile not found: {profile_path}")

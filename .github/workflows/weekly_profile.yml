@@ -6,11 +6,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  rewrite-profile:
+  rewrite-profiles:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write          # Needed to commit the updated profile
+      contents: write          # Needed to commit updated profiles back to this repo
 
     steps:
       - uses: actions/checkout@v4
@@ -22,15 +22,30 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Rewrite interest profile
-        run: python -m feedback.rewrite_profile
+      - name: Rewrite all active user profiles
+        run: |
+          python - <<'EOF'
+          import yaml
+          import logging
+          logging.basicConfig(level=logging.INFO, format="%(levelname)s  %(message)s")
+          from feedback.rewrite_profile import rewrite_profile
+          registry = yaml.safe_load(open("users/registry.yaml"))
+          for user in registry.get("users", []):
+              if user.get("active", True):
+                  uid = user["id"]
+                  print(f"Rewriting profile for {uid}...")
+                  try:
+                      rewrite_profile(user_id=uid)
+                  except Exception as e:
+                      print(f"  WARN: {e}")
+          EOF
 
-      - name: Commit updated profile
+      - name: Commit updated profiles
         run: |
           git config user.name "digest-bot"
           git config user.email "bot@users.noreply.github.com"
-          git add data/interest-profile.md
-          git diff --staged --quiet || git commit -m "chore: weekly profile update $(date +%Y-%m-%d)"
+          git add users/profiles/
+          git diff --staged --quiet || git commit -m "chore: weekly profile updates $(date +%Y-%m-%d)"
           git push
 
     env:

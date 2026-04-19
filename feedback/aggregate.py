@@ -13,7 +13,7 @@ from pathlib import Path
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-from config import FEEDBACK_LOG_PATH, WEEKLY_SUMMARY_PATH
+from config import FEEDBACK_LOG_PATH, WEEKLY_SUMMARY_PATH, FEEDBACK_DIR
 
 log = logging.getLogger(__name__)
 
@@ -21,8 +21,8 @@ _WINDOW_DAYS = 7
 _TOP_K_KEYWORDS = 5
 
 
-def _load_signals(since: date) -> list[dict]:
-    log_path = Path(FEEDBACK_LOG_PATH)
+def _load_signals(since: date, log_path: Path | None = None) -> list[dict]:
+    log_path = log_path or Path(FEEDBACK_LOG_PATH)
     if not log_path.exists():
         return []
     signals = []
@@ -60,10 +60,26 @@ def _extract_keywords(titles: list[str], top_k: int = _TOP_K_KEYWORDS) -> list[s
         return []
 
 
-def aggregate() -> dict:
+def aggregate(user_id: str | None = None) -> dict:
+    """
+    Aggregate feedback signals for the given user.
+
+    user_id: slug from users/registry.yaml. When provided, reads from
+             data/feedback/{user_id}/feedback_log.jsonl and writes
+             data/feedback/{user_id}/weekly_summary.json.
+             Falls back to legacy single-user paths when None.
+    """
     today = date.today()
     since = today - timedelta(days=_WINDOW_DAYS)
-    signals = _load_signals(since)
+
+    if user_id:
+        log_path = Path(FEEDBACK_DIR) / user_id / "feedback_log.jsonl"
+        out_path = Path(FEEDBACK_DIR) / user_id / "weekly_summary.json"
+    else:
+        log_path = Path(FEEDBACK_LOG_PATH)
+        out_path = Path(WEEKLY_SUMMARY_PATH)
+
+    signals = _load_signals(since, log_path=log_path)
 
     by_category: dict[str, dict[str, int]] = defaultdict(lambda: {"useful": 0, "skip": 0})
     by_source: dict[str, dict[str, int]] = defaultdict(lambda: {"useful": 0, "skip": 0})
@@ -94,7 +110,6 @@ def aggregate() -> dict:
         "top_skipped_keywords": _extract_keywords(skip_titles),
     }
 
-    out_path = Path(WEEKLY_SUMMARY_PATH)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False))
     log.info("Weekly summary written to %s  (%d signals)", out_path, len(signals))

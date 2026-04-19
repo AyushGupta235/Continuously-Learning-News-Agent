@@ -182,3 +182,8 @@ INTEREST_PROFILE_PATH = "data/interest-profile.md"
 FEEDBACK_LOG_PATH = "data/feedback_log.jsonl"
 WEEKLY_SUMMARY_PATH = "data/weekly_summary.json"
 TEMPLATE_PATH = "templates/digest.html.jinja"
+
+# Multi-user paths — namespaced by user_id
+MANIFEST_DIR = "data/manifests"       # data/manifests/{user_id}/digest_manifest_{date}.json
+FEEDBACK_DIR = "data/feedback"        # data/feedback/{user_id}/feedback_log.jsonl
+USERS_REGISTRY_PATH = "users/registry.yaml"

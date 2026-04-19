@@ -1,3 +1,15 @@
 .env
 .DS_Store
 *__pycache__*
+
+# Per-user profiles are committed with UUID filenames for obfuscation.
+# See users/registry.yaml for the id → file mapping.
+
+# Per-user feedback logs and aggregated summaries (never committed)
+data/feedback/
+
+# Per-user digest manifests
+data/manifests/
+
+# Shared summarised article pool (CI artifact)
+data/summarised_pool.json

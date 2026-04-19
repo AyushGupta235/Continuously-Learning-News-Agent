@@ -1,0 +1,27 @@
+# User registry — maps user IDs to their profile files and email addresses.
+#
+# Profile files use UUID-based filenames (e.g. a3f8b2c1.md) so that casual
+# repo browsing doesn't immediately reveal who's who. The mapping lives here.
+#
+# To add a user:
+#   1. Generate a UUID:  python -c "import uuid; print(uuid.uuid4().hex[:8])"
+#   2. Create users/profiles/{uuid}.md with the Markdown interest profile.
+#   3. Add an entry below and commit both files.
+#
+# Field reference:
+#   id              — stable slug [a-z0-9_], used as filesystem key everywhere
+#   name            — display name used in the email subject line
+#   email           — recipient email address
+#   profile         — path to the .md profile file (UUID filename for obfuscation)
+#   active          — set false to pause without removing
+#   filter_threshold — override FILTER_SCORE_THRESHOLD (default: 6)
+#   max_stories     — override MAX_DIGEST_STORIES (default: 12)
+
+users:
+  - id: ayush
+    name: Ayush Gupta
+    email: ""                              # fill in your email address
+    profile: users/profiles/ayush.md      # rename to a UUID file when ready
+    active: true
+    # filter_threshold: 6
+    # max_stories: 12

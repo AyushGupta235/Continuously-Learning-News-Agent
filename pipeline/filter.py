@@ -29,8 +29,8 @@ def _get_client() -> OpenAI:
     return OpenAI(api_key=XAI_API_KEY, base_url="https://api.x.ai/v1")
 
 
-def _load_profile() -> str:
-    return Path(INTEREST_PROFILE_PATH).read_text()
+def _load_profile(profile_path: str | None = None) -> str:
+    return Path(profile_path or INTEREST_PROFILE_PATH).read_text()
 
 
 def _build_user_prompt(batch: list[dict]) -> str:
@@ -72,12 +72,15 @@ def _parse_scores(text: str) -> list[dict]:
         return []
 
 
-def score_articles(articles: list[dict]) -> list[dict]:
+def score_articles(articles: list[dict], profile_path: str | None = None) -> list[dict]:
     """
     Score all articles and return those above threshold, sorted by score desc.
     Attaches 'relevance_score' and 'score_reason' to each surviving article.
+
+    profile_path: path to the user's interest profile .md file.
+                  Defaults to INTEREST_PROFILE_PATH from config.
     """
-    profile = _load_profile()
+    profile = _load_profile(profile_path)
     client = _get_client()
 
     score_map: dict[str, dict] = {}

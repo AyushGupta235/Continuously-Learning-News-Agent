@@ -1,0 +1,3 @@
+# This directory is populated at CI runtime by checking out the private profiles repo.
+# See .github/workflows/daily_digest.yml for the checkout step.
+# Profile files (*.md) are gitignored — they should never be committed here.

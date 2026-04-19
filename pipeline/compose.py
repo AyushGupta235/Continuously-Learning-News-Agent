@@ -17,6 +17,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from config import (
     DATA_DIR,
+    MANIFEST_DIR,
     XAI_API_KEY,
     XAI_COMPOSE_TEMP,
     XAI_MODEL,
@@ -76,10 +77,18 @@ def _order_stories(stories: list[dict], ordered_ids: list[str]) -> list[dict]:
     return ordered[:MAX_DIGEST_STORIES]
 
 
-def compose(stories: list[dict]) -> tuple[str, dict]:
+def compose(
+    stories: list[dict],
+    user_id: str = "default",
+    manifest_dir: str | None = None,
+) -> tuple[str, dict]:
     """
     Returns (rendered_html, manifest_dict).
     manifest_dict maps story_id → {url, source, category, title}.
+
+    user_id:      used to namespace the manifest file and feedback tracker URLs.
+    manifest_dir: root directory for manifests; defaults to MANIFEST_DIR from config.
+                  Manifest is written to {manifest_dir}/{user_id}/digest_manifest_{date}.json.
     """
     # Limit to reasonable number for xAI call
     stories = stories[:MAX_DIGEST_STORIES]
@@ -125,6 +134,7 @@ def compose(stories: list[dict]) -> tuple[str, dict]:
         date_display=today.strftime("%A, %d %b %Y"),
         tracker_base=TRACKER_BASE_URL,
         date_str=date_str,
+        user_id=user_id,
     )
 
     # Manifest for feedback tracker
@@ -138,9 +148,10 @@ def compose(stories: list[dict]) -> tuple[str, dict]:
         for s in ordered_stories
     }
 
-    # Persist manifest
-    manifest_path = Path(DATA_DIR) / f"digest_manifest_{date_str}.json"
-    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    # Persist manifest — namespaced by user_id
+    mdir = Path(manifest_dir or MANIFEST_DIR) / user_id
+    mdir.mkdir(parents=True, exist_ok=True)
+    manifest_path = mdir / f"digest_manifest_{date_str}.json"
     manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False))
     log.info("Manifest written to %s", manifest_path)
 

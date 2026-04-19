@@ -16,29 +16,29 @@ GMAIL_SMTP = "smtp.gmail.com"
 GMAIL_SMTP_PORT = 587
 
 
-def send(html: str) -> str:
+def send(html: str, recipient_email: str | None = None, sender_name: str = "Your Digest") -> str:
     """
     Send the digest email via Gmail SMTP. Returns a message ID on success.
     Raises on failure — caller should handle and abort the pipeline.
+
+    recipient_email: address to deliver to. Defaults to DIGEST_EMAIL (single-user mode).
+    sender_name:     display name in the email subject line.
     """
     if not GMAIL_APP_PASSWORD:
         raise RuntimeError("GMAIL_APP_PASSWORD is not set")
     if not DIGEST_EMAIL:
         raise RuntimeError("DIGEST_EMAIL is not set")
 
-    subject = f"Your digest — {date.today().strftime('%A, %d %b')}"
+    to_addr = recipient_email or DIGEST_EMAIL
+    subject = f"{sender_name} — {date.today().strftime('%A, %d %b')}"
 
-    # Create email message
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"] = DIGEST_EMAIL
-    msg["To"] = DIGEST_EMAIL
+    msg["To"] = to_addr
 
-    # Attach HTML content
-    part = MIMEText(html, "html")
-    msg.attach(part)
+    msg.attach(MIMEText(html, "html"))
 
-    # Send via Gmail SMTP
     try:
         with smtplib.SMTP(GMAIL_SMTP, GMAIL_SMTP_PORT) as server:
             server.starttls()
@@ -46,7 +46,7 @@ def send(html: str) -> str:
             server.send_message(msg)
 
         message_id = msg["Message-ID"] or "unknown"
-        log.info("Email sent: to=%s  subject=%s", DIGEST_EMAIL, subject)
+        log.info("Email sent: to=%s  subject=%s", to_addr, subject)
         return message_id
     except smtplib.SMTPAuthenticationError:
         raise RuntimeError(
