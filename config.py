@@ -20,6 +20,7 @@ TRACKER_BASE_URL = os.environ.get("TRACKER_BASE_URL", "http://localhost:5000")
 
 # ── Pipeline limits ───────────────────────────────────────────────────────────
 MAX_RAW_ARTICLES = 250       # Cap before dedup
+MAX_ARTICLE_AGE_DAYS = 3     # Drop articles older than this many days
 FILTER_SCORE_THRESHOLD = 6   # Articles scoring below this are dropped
 MAX_SCORED_ARTICLES = 30     # Articles passed to summarise step
 FILTER_BATCH_SIZE = 20       # Articles per xAI scoring call
@@ -182,6 +183,7 @@ INTEREST_PROFILE_PATH = "data/interest-profile.md"
 FEEDBACK_LOG_PATH = "data/feedback_log.jsonl"
 WEEKLY_SUMMARY_PATH = "data/weekly_summary.json"
 TEMPLATE_PATH = "templates/digest.html.jinja"
+AMP_TEMPLATE_PATH = "templates/digest.amp.html.jinja"
 
 # Multi-user paths — namespaced by user_id
 MANIFEST_DIR = "data/manifests"       # data/manifests/{user_id}/digest_manifest_{date}.json

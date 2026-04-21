@@ -24,7 +24,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-from flask import Flask, abort, redirect, request
+from flask import Flask, abort, redirect, request, make_response
 
 app = Flask(__name__)
 
@@ -66,12 +66,21 @@ def _append_signal(record: dict, user_id: str) -> None:
         f.write(json.dumps(record) + "\n")
 
 
+def _cors(response):
+    """Allow cross-origin fetch from file:// and any localhost origin."""
+    origin = request.headers.get("Origin", "")
+    if not origin or origin == "null" or origin.startswith("http://localhost") or origin.startswith("http://127.0.0.1"):
+        response.headers["Access-Control-Allow-Origin"] = origin or "*"
+    return response
+
+
 @app.route("/signal")
 def signal():
     story_id = request.args.get("id", "").strip()
     vote = request.args.get("v", "").strip()
     date_str = request.args.get("date", "").strip()
     user_id = request.args.get("user", "default").strip()
+    noredirect = request.args.get("noredirect", "0") == "1"
 
     if not story_id or vote not in VALID_SIGNALS or not date_str:
         abort(400, "Missing or invalid parameters")
@@ -95,9 +104,30 @@ def signal():
     }
     _append_signal(record, user_id)
 
-    if article_url:
-        return redirect(article_url, code=302)
-    return "Signal recorded.", 200
+    if noredirect:
+        return _cors(make_response("ok", 200))
+
+    label = "👍 Useful" if vote == "useful" else "👎 Skip"
+    title = story_meta.get("title", "")
+    article_link = (
+        f'<a href="{article_url}" style="display:inline-block;margin-top:16px;padding:10px 20px;'
+        f'background:#1a1a2e;color:#fff;border-radius:6px;text-decoration:none;font-size:14px;">Read article →</a>'
+        if article_url else ""
+    )
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Feedback recorded</title></head>
+<body style="margin:0;padding:40px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f4f4;text-align:center;">
+  <div style="max-width:400px;margin:0 auto;background:#fff;border-radius:8px;padding:32px 24px;">
+    <p style="font-size:32px;margin:0 0 8px;">✓</p>
+    <p style="font-size:16px;font-weight:600;color:#1a1a2e;margin:0 0 6px;">{label} — noted!</p>
+    {'<p style="font-size:13px;color:#666;margin:0 0 16px;">' + title + '</p>' if title else ''}
+    {article_link}
+  </div>
+</body>
+</html>"""
+    return html, 200
 
 
 @app.route("/health")

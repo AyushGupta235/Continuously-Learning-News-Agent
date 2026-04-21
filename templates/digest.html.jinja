@@ -72,11 +72,13 @@
               <table role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
                   <td>
-                    <a href="{{ tracker_base }}/signal?id={{ story.id }}&v=useful&date={{ date_str }}&user={{ user_id }}"
+                    <a href="{{ tracker_base }}/signal?id={{ story.id }}&v=useful&date={{ date_str }}&user={{ user_id }}&noredirect=1"
+                       onclick="(function(el){event.preventDefault();fetch(el.href).then(function(){var p=el.parentNode;p.innerHTML='<span style=&quot;font-size:12px;color:#888&quot;>&#10003; Noted</span>';}).catch(function(){window.location=el.href;});})(this);return false;"
                        style="display:inline-block;padding:4px 12px;margin-right:6px;border-radius:4px;font-size:12px;font-weight:600;background-color:#e8f5e9;color:#2e7d32;text-decoration:none;">
                       Useful
                     </a>
-                    <a href="{{ tracker_base }}/signal?id={{ story.id }}&v=skip&date={{ date_str }}&user={{ user_id }}"
+                    <a href="{{ tracker_base }}/signal?id={{ story.id }}&v=skip&date={{ date_str }}&user={{ user_id }}&noredirect=1"
+                       onclick="(function(el){event.preventDefault();fetch(el.href).then(function(){var p=el.parentNode;p.innerHTML='<span style=&quot;font-size:12px;color:#888&quot;>&#10003; Noted</span>';}).catch(function(){window.location=el.href;});})(this);return false;"
                        style="display:inline-block;padding:4px 12px;border-radius:4px;font-size:12px;font-weight:600;background-color:#fce4ec;color:#c62828;text-decoration:none;">
                       Skip
                     </a>

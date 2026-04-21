@@ -17,7 +17,7 @@ import asyncio
 import logging
 import re
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Any
 
 import feedparser
@@ -28,6 +28,7 @@ from trafilatura.settings import use_config as trafilatura_use_config
 from pipeline.dedup import _article_id  # noqa: F401 — shared ID helper
 from config import (
     HN_CONFIG,
+    MAX_ARTICLE_AGE_DAYS,
     MAX_RAW_ARTICLES,
     NEWSAPI_KEY,
     NEWSAPI_QUERIES,
@@ -232,6 +233,26 @@ async def _fetch_hn(client: httpx.AsyncClient) -> list[dict]:
     return articles
 
 
+# ── Date filtering ────────────────────────────────────────────────────────────
+
+def _filter_recent(articles: list[dict], max_age_days: int) -> list[dict]:
+    """Drop articles older than max_age_days. Keeps articles with unparseable dates."""
+    cutoff = datetime.now(timezone.utc) - timedelta(days=max_age_days)
+    recent = []
+    for a in articles:
+        try:
+            pub_str = a.get("published", "")
+            # Handle both "+00:00" and "Z" suffixes
+            pub = datetime.fromisoformat(pub_str.replace("Z", "+00:00"))
+            if pub.tzinfo is None:
+                pub = pub.replace(tzinfo=timezone.utc)
+            if pub >= cutoff:
+                recent.append(a)
+        except Exception:
+            recent.append(a)  # keep if date can't be parsed
+    return recent
+
+
 # ── Full text extraction (parallel) ──────────────────────────────────────────
 
 async def _enrich_full_text(
@@ -273,6 +294,13 @@ async def fetch_all() -> list[dict]:
     log.info(
         "Fetched: RSS=%d NewsAPI=%d Reddit=%d HN=%d  total=%d",
         len(rss), len(newsapi), len(reddit), len(hn), len(all_articles),
+    )
+
+    # Drop stale articles before the expensive text extraction
+    all_articles = _filter_recent(all_articles, MAX_ARTICLE_AGE_DAYS)
+    log.info(
+        "After date filter (<%d days): %d articles remain",
+        MAX_ARTICLE_AGE_DAYS, len(all_articles),
     )
 
     # Cap before expensive text extraction
