@@ -3,6 +3,7 @@ Send the composed digest via Gmail SMTP.
 """
 
 import logging
+import re
 import smtplib
 from datetime import date
 from email.mime.text import MIMEText
@@ -16,11 +17,26 @@ GMAIL_SMTP = "smtp.gmail.com"
 GMAIL_SMTP_PORT = 587
 
 
-def send(html: str, recipient_email: str | None = None, sender_name: str = "Your Digest") -> str:
+def _html_to_plain(html: str) -> str:
+    """Very rough HTML → plain text for the fallback MIME part."""
+    text = re.sub(r"<[^>]+>", "", html)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
+
+
+def send(
+    html: str,
+    amp_html: str | None = None,
+    recipient_email: str | None = None,
+    sender_name: str = "Your Digest",
+) -> str:
     """
     Send the digest email via Gmail SMTP. Returns a message ID on success.
     Raises on failure — caller should handle and abort the pipeline.
 
+    html:            rendered HTML part (required).
+    amp_html:        rendered AMP for Email part (optional; enables interactive
+                     feedback buttons in Gmail when Dynamic Email is enabled).
     recipient_email: address to deliver to. Defaults to DIGEST_EMAIL (single-user mode).
     sender_name:     display name in the email subject line.
     """
@@ -37,7 +53,12 @@ def send(html: str, recipient_email: str | None = None, sender_name: str = "Your
     msg["From"] = DIGEST_EMAIL
     msg["To"] = to_addr
 
+    # Parts must go lowest → highest fidelity; email client picks the last it supports.
+    msg.attach(MIMEText(_html_to_plain(html), "plain"))
     msg.attach(MIMEText(html, "html"))
+    if amp_html:
+        msg.attach(MIMEText(amp_html, "x-amp+html"))
+        log.info("AMP part attached (%d chars)", len(amp_html))
 
     try:
         with smtplib.SMTP(GMAIL_SMTP, GMAIL_SMTP_PORT) as server:

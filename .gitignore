@@ -13,3 +13,6 @@ data/manifests/
 
 # Shared summarised article pool (CI artifact)
 data/summarised_pool.json
+
+# Digest previews (local testing)
+data/digest_preview*.html

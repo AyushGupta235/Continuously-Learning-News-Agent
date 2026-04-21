@@ -67,19 +67,37 @@ def _append_signal(record: dict, user_id: str) -> None:
 
 
 def _cors(response):
-    """Allow cross-origin fetch from file:// and any localhost origin."""
+    """
+    Add CORS headers for:
+      - file:// / localhost origins (browser preview fetch calls)
+      - AMP for Email: echo back __amp_source_origin so Gmail renders the form
+    """
     origin = request.headers.get("Origin", "")
     if not origin or origin == "null" or origin.startswith("http://localhost") or origin.startswith("http://127.0.0.1"):
         response.headers["Access-Control-Allow-Origin"] = origin or "*"
+
+    # AMP requires the server to echo __amp_source_origin back as a response header
+    amp_source_origin = request.args.get("__amp_source_origin", "")
+    if amp_source_origin:
+        response.headers["AMP-Access-Control-Allow-Source-Origin"] = amp_source_origin
+        expose = response.headers.get("Access-Control-Expose-Headers", "")
+        extra = "AMP-Access-Control-Allow-Source-Origin"
+        response.headers["Access-Control-Expose-Headers"] = f"{expose},{extra}".strip(",")
+        # Allow the AMP origin itself
+        response.headers["Access-Control-Allow-Origin"] = amp_source_origin
+
     return response
 
 
-@app.route("/signal")
+@app.route("/signal", methods=["GET", "POST"])
 def signal():
-    story_id = request.args.get("id", "").strip()
-    vote = request.args.get("v", "").strip()
-    date_str = request.args.get("date", "").strip()
-    user_id = request.args.get("user", "default").strip()
+    # AMP forms POST; regular links GET — read from the right source
+    src = request.form if request.method == "POST" else request.args
+
+    story_id = src.get("id", "").strip()
+    vote = src.get("v", "").strip()
+    date_str = src.get("date", "").strip()
+    user_id = src.get("user", "default").strip()
     noredirect = request.args.get("noredirect", "0") == "1"
 
     if not story_id or vote not in VALID_SIGNALS or not date_str:
@@ -127,7 +145,7 @@ def signal():
   </div>
 </body>
 </html>"""
-    return html, 200
+    return _cors(make_response(html, 200))
 
 
 @app.route("/health")

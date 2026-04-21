@@ -50,16 +50,19 @@ async def main(dry_run: bool) -> None:
     stories = cluster_stories(articles)
 
     log.info("=== Step 6: Compose ===")
-    html, manifest = compose(stories)
+    html, amp_html, manifest = compose(stories)
 
     if dry_run:
         out = Path("data/digest_preview.html")
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(html)
         log.info("Dry run: HTML written to %s  (%d chars)", out, len(html))
+        out_amp = Path("data/digest_preview.amp.html")
+        out_amp.write_text(amp_html)
+        log.info("Dry run: AMP HTML written to %s  (%d chars)", out_amp, len(amp_html))
     else:
         log.info("=== Step 7: Deliver ===")
-        email_id = send(html)
+        email_id = send(html, amp_html=amp_html)
         log.info("Delivered! email_id=%s", email_id)
 
     log.info("=== Step 8: Aggregate feedback ===")

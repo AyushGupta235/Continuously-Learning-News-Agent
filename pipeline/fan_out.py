@@ -147,18 +147,21 @@ async def run(dry_run: bool = False, user_ids: list[str] | None = None) -> None:
             continue
 
         stories = cluster_stories(user_articles)
-        html, _ = compose(stories, user_id=uid, manifest_dir="data/manifests")
+        html, amp_html, _ = compose(stories, user_id=uid, manifest_dir="data/manifests")
 
         if dry_run:
             out = Path(f"data/digest_preview_{uid}.html")
             out.parent.mkdir(parents=True, exist_ok=True)
             out.write_text(html)
             log.info("Dry run: HTML for %s written to %s  (%d chars)", uid, out, len(html))
+            out_amp = Path(f"data/digest_preview_{uid}.amp.html")
+            out_amp.write_text(amp_html)
+            log.info("Dry run: AMP HTML for %s written to %s  (%d chars)", uid, out_amp, len(amp_html))
         else:
             if not email:
                 log.warning("User %s: no email configured — skipping delivery", uid)
             else:
-                send(html, recipient_email=email, sender_name=f"{display_name}'s Digest")
+                send(html, amp_html=amp_html, recipient_email=email, sender_name=f"{display_name}'s Digest")
                 log.info("Delivered digest to %s", uid)
 
         aggregate(user_id=uid)

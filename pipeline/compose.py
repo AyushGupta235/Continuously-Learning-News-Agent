@@ -16,6 +16,7 @@ from openai import OpenAI
 from jinja2 import Environment, FileSystemLoader
 
 from config import (
+    AMP_TEMPLATE_PATH,
     DATA_DIR,
     MANIFEST_DIR,
     XAI_API_KEY,
@@ -81,9 +82,9 @@ def compose(
     stories: list[dict],
     user_id: str = "default",
     manifest_dir: str | None = None,
-) -> tuple[str, dict]:
+) -> tuple[str, str, dict]:
     """
-    Returns (rendered_html, manifest_dict).
+    Returns (rendered_html, rendered_amp_html, manifest_dict).
     manifest_dict maps story_id → {url, source, category, title}.
 
     user_id:      used to namespace the manifest file and feedback tracker URLs.
@@ -123,12 +124,11 @@ def compose(
         "Compose: intro=%s, %d stories ordered", bool(intro), len(ordered_stories)
     )
 
-    # Render HTML
-    template_path = Path(TEMPLATE_PATH)
-    env = Environment(loader=FileSystemLoader(str(template_path.parent)))
-    template = env.get_template(template_path.name)
+    # Render HTML + AMP HTML (both templates live in the same directory)
+    template_dir = str(Path(TEMPLATE_PATH).parent)
+    env = Environment(loader=FileSystemLoader(template_dir))
 
-    rendered_html = template.render(
+    render_vars = dict(
         intro=intro,
         stories=ordered_stories,
         date_display=today.strftime("%A, %d %b %Y"),
@@ -136,6 +136,9 @@ def compose(
         date_str=date_str,
         user_id=user_id,
     )
+
+    rendered_html = env.get_template(Path(TEMPLATE_PATH).name).render(**render_vars)
+    rendered_amp_html = env.get_template(Path(AMP_TEMPLATE_PATH).name).render(**render_vars)
 
     # Manifest for feedback tracker
     manifest = {
@@ -155,7 +158,7 @@ def compose(
     manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False))
     log.info("Manifest written to %s", manifest_path)
 
-    return rendered_html, manifest
+    return rendered_html, rendered_amp_html, manifest
 
 
 if __name__ == "__main__":
@@ -171,8 +174,11 @@ if __name__ == "__main__":
     articles = score_articles(articles)
     articles = asyncio.run(summarise_articles(articles))
     stories = cluster_stories(articles)
-    html, manifest = compose(stories)
+    html, amp_html, manifest = compose(stories)
     out = Path("data/digest_preview.html")
     out.write_text(html)
+    out_amp = Path("data/digest_preview.amp.html")
+    out_amp.write_text(amp_html)
     print(f"Preview written to {out}  ({len(html)} chars)")
+    print(f"AMP preview written to {out_amp}  ({len(amp_html)} chars)")
     print(f"Manifest has {len(manifest)} stories")
